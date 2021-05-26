@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF8">
+    <title>Вход</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<form name="auto" method="post" id = 'auto' action="/pagesForResult/checkBalance">
+    <p><b>Введите номер счета</b><br>
+        <input name ="number" type="text" size="40" id = "number">
+    <p><input type="submit" value="Ввод" onclick="sendJSON()">
+</form>
+<script type="text/javascript">
+    function sendJSON() {
+        var obj, dbParam, xmlhttp;
+        obj = {"number": document.getElementById("number").value};
+        dbParam = JSON.stringify(obj);
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.open('POST', '/pagesForResult/checkBalance', true);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send(dbParam);
+    }
+</script>
+</body>
+</html>
