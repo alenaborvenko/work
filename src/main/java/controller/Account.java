@@ -1,17 +1,20 @@
 package controller;
 
+/**
+ * Класс счет для преобразования данных из запроса в форме json
+ */
 public class Account {
-    private String number;
+    private String account;
 
-    public Account(String number) {
-        this.number = number;
+    public Account(String account) {
+        this.account = account;
     }
 
     public String getNumber() {
-        return number;
+        return account;
     }
 
-    public void setNumber(String number) {
-        this.number = number;
+    public void setNumber(String account) {
+        this.account = account;
     }
 }

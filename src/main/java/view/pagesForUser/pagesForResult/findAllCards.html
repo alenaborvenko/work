@@ -2,9 +2,33 @@
 <html xmlns="http://www.w3.org/1999/html">
 <head>
     <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF8">
-    <title>Все карты</title>
+    <title>Вход</title>
     <meta charset="UTF-8">
 </head>
 <body>
+<form name="auto" method="post" id = 'auto' align = 'center' size = "100" onsubmit="sendJSON()">
+    <p><b>Введите серию и номер паспорта</b><br>
+        <input name ="passport" type="text" size="40" id = "passport">
+    <p><input type="submit" value="Ввод" onclick="sendJSON()">
+</form>
+<script type="text/javascript">
+    function sendJSON() {
+        let form = document.forms["auto"];
+        let fd = new FormData(form);
+        let data = {};
+        for (let [key, prop] of fd) {
+            data[key] = prop;
+        }
+        data = JSON.stringify(data, null, 2);
+
+        let xmlhttp;
+        window.location.href = "http://localhost:8001/pagesForResult/findAllCards/result";
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("POST", "/pagesForResult/findAllCards/result", true);
+        xmlhttp.setRequestHeader("Content-type", "application/json");
+        xmlhttp.send(data);
+        return false;
+    }
+</script>
 </body>
 </html>

@@ -1,3 +1,7 @@
+drop table if exists CARD;
+drop table if exists ACCOUNT;
+drop table if exists USER;
+
 -- we don't know how to generate root <with-no-name> (class Root) :(
 create table if not exists USER
 (
@@ -19,7 +23,7 @@ create table if not exists ACCOUNT
 
 create table if not exists CARD
 (
-    id int auto_increment primary key ,
+    id long identity(1000000000000000, 1) primary key ,
     ACCOUNT_ID int not null
         references ACCOUNT (id)
 );

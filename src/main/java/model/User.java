@@ -3,6 +3,9 @@ package model;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+/**
+ * класс пользователь
+ */
 public class User {
     private int id;
     private String name;
@@ -18,6 +21,10 @@ public class User {
 
     public String getPassport() {
         return passport;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

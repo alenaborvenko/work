@@ -6,9 +6,12 @@
     <meta charset="UTF-8">
 </head>
 <body>
-<form name="toUpBalance" method="post" id = 'auto' action="/pagesForResult/topUpBalance">
+<form name="toUpBalance" method="post" id = 'auto'align = 'center'>
+    <p><b>Введите номер и серию счета</b><br>
+        <input name ="passport" type="text" size="40" id = "passport">
     <p><b>Введите номер счета</b><br>
-        <input name ="number" type="text" size="40" id = "number">
+        <input name ="account" type="text" size="40" id = "account">
+    <p><b>Введите баланс</b><br>
         <input name ="balance" type="text" size="40" id = "balance">
     <p><input type="submit" value="Ввод" onclick="sendJSON()">
 </form>
@@ -22,11 +25,13 @@
         }
         data = JSON.stringify(data, null, 2);
 
+        window.location.href = "http://localhost:8001/pagesForResult/topUpBalance/result";
         let xmlhttp;
         xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("POST", "/pagesForResult/topUpBalance", true);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.open("POST", "/pagesForResult/topUpBalance/result", true);
+        xmlhttp.setRequestHeader("Content-type", "application/json");
         xmlhttp.send(data);
+        return false;
     }
 </script>
 </body>

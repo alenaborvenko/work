@@ -4,11 +4,16 @@
     <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF8">
     <title>Вход</title>
     <meta charset="UTF-8">
+    <style>
+        p {
+            font-size: 32pt;
+        }
+    </style>
 </head>
 <body>
-<form name="auto" method="post" action="/welcome" id = 'auto'>
+<form name="auto" method="post" action="/welcome.html" id = 'auto' align = 'center' size = "100">
     <p><b>Введите серию и номер паспорта:</b><br>
-        <input name ="passport" type="text" size="40" id = "passport">
+        <input name ="passport" type="text" id = "passport">
     <p><input type="submit" value="Вход" onclick="sendJSON()">
 </form>
 <script type="text/javascript">
@@ -17,10 +22,11 @@
         obj = {"passport": document.getElementById("passport").value};
         dbParam = JSON.stringify(obj);
         xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', '/welcome', true);
+        xmlhttp.open('POST', '/welcome.html', true);
         xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xmlhttp.send(dbParam);
     }
 </script>
 </body>
 </html>
+

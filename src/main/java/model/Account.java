@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+/**
+ * Класс счета
+ */
 public class Account {
     private int id;
     private String number;
@@ -14,15 +17,6 @@ public class Account {
         this.id = id;
         this.number = number;
         this.user = user;
-        this.balance = balance;
-    }
-
-    public Account(String number) {
-        this.number = number;
-    }
-
-    public Account(String number, BigDecimal balance) {
-        this.number = number;
         this.balance = balance;
     }
 

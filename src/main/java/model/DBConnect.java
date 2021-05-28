@@ -10,8 +10,14 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
+/**
+ * Класс подкючающиейся к базе данных
+ */
 public class DBConnect implements AutoCloseable{
 
+    /**
+     * Подключение к базе
+     */
     private Connection connection;
 
     public DBConnect() {
@@ -23,6 +29,10 @@ public class DBConnect implements AutoCloseable{
         init();
     }
 
+    /**
+     * первоначальное заполнение базы
+     * @throws FileNotFoundException - если не найдены скрипты
+     */
     private void init() throws FileNotFoundException {
         try {
             RunScript.execute(connection, new FileReader("./src/main/resources/create.ddl"));
@@ -32,6 +42,9 @@ public class DBConnect implements AutoCloseable{
         }
     }
 
+    /**
+     * метод иницилизирует подключение
+     */
     public void initConnection() {
         try (InputStream in = DBConnect.class.getClassLoader()
                 .getResourceAsStream("app.properties")) {

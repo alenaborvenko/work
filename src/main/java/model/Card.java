@@ -1,14 +1,18 @@
 package model;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+/**
+ * Класс карты
+ */
 public class Card {
-    int id;
+    long id;
     private Account account;
 
-    public Card(int id, Account account) {
+    public Card(long id, Account account) {
         this.id = id;
         this.account = account;
     }
@@ -34,11 +38,11 @@ public class Card {
                 .toString();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

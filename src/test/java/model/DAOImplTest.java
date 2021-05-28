@@ -6,12 +6,15 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 
 public class DAOImplTest {
-    public Connection init() {
+    public static Connection init() {
         try (InputStream in = DAOImpl.class.getClassLoader()
                 .getResourceAsStream("app.properties")) {
             Properties config = new Properties();
@@ -31,20 +34,20 @@ public class DAOImplTest {
     public void whenAddNewCard() throws Exception{
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
             User user = dao.findByPassport("5010 800820");
-            assertTrue(dao.addNewCard("10000000000000000000"));
-            assertTrue(dao.findAllCard().size() == 2);
+            assertTrue(dao.addNewCard("10000000000000000000", user.getPassport()));
+            assertTrue(dao.findAllCard(user.getPassport()).size() == 2);
             List<Card> expected = new ArrayList<>(Arrays.asList(
-                    new Card(1, new Account(1, "10000000000000000000", user, BigDecimal.valueOf(100).setScale(2))),
-                    new Card(3, new Account(1, "10000000000000000000", user, BigDecimal.valueOf(100).setScale(2)))
+                    new Card(1000000000000000L, new Account(1, "10000000000000000000", user, BigDecimal.valueOf(100).setScale(2))),
+                    new Card(1000000000000002L, new Account(1, "10000000000000000000", user, BigDecimal.valueOf(100).setScale(2)))
             ));
-            assertEquals(expected, dao.findAllCard());
+            assertEquals(expected, dao.findAllCard(user.getPassport()));
         }
     }
 
     @Test(expected = Exception.class)
     public void whenAddNewCardException() throws Exception{
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
-            dao.addNewCard("");
+            dao.addNewCard("", "");
         }
     }
 
@@ -68,15 +71,15 @@ public class DAOImplTest {
     public void whenNotAddNewCard() throws Exception {
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
             User user = dao.findByPassport("5010 800820");
-            assertFalse(dao.addNewCard("10000000000000000020"));
-            assertTrue(dao.findAllCard().size() == 1);
+            assertFalse(dao.addNewCard("10000000000000000020", user.getPassport()));
+            assertTrue(dao.findAllCard(user.getPassport()).size() == 1);
         }
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void whenFindAllWithoutUser() throws Exception {
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
-            dao.findAllCard();
+            assertEquals(new ArrayList<>(), dao.findAllCard(""));
         }
     }
 
@@ -86,8 +89,8 @@ public class DAOImplTest {
             User user = dao.findByPassport("5010 800820");
             Account account = new Account(1, "10000000000000000000", user, BigDecimal.valueOf(100).setScale(2));
             assertEquals(new ArrayList<>(Arrays.asList(
-                    new Card(1, account)
-            )),dao.findAllCard());
+                    new Card(1000000000000000L, account)
+            )),dao.findAllCard(user.getPassport()));
         }
     }
 
@@ -95,8 +98,8 @@ public class DAOImplTest {
     public void whenFindAllFewCard() throws Exception {
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
             User user = dao.findByPassport("5010 800820");
-            dao.addNewCard("10000000000000000000");
-            assertTrue(dao.findAllCard().size() == 2);
+            dao.addNewCard("10000000000000000000", user.getPassport());
+            assertTrue(dao.findAllCard(user.getPassport()).size() == 2);
         }
     }
 
@@ -104,16 +107,17 @@ public class DAOImplTest {
     public void whenTopUpBalanceAccount() throws Exception {
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
             User user = dao.findByPassport("5010 800820");
-            assertTrue(dao.topUpBalance("10000000000000000000", BigDecimal.valueOf(8000)));
-            assertEquals(dao.checkBalance("10000000000000000000"), BigDecimal.valueOf(8100).setScale(2));
+            assertTrue(dao.topUpBalance("10000000000000000000", BigDecimal.valueOf(8000), user.getPassport()));
+            assertEquals(dao.checkBalance("10000000000000000000", user.getPassport()), BigDecimal.valueOf(8100).setScale(2));
         }
     }
 
-    @Test
+    @Test (expected = IllegalArgumentException.class)
     public void whenTopUpBalanceAccountNotAccount() throws Exception {
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
             User user = dao.findByPassport("5010 800820");
-            assertFalse(dao.topUpBalance("10000000000000003000", BigDecimal.valueOf(8000).setScale(2)));
+            dao.topUpBalance("10000000000000003000",BigDecimal.valueOf(8000).setScale(2), user.getPassport());
+//            assertFalse(dao.topUpBalance("10000000000000003000", BigDecimal.valueOf(8000).setScale(2), user.getPassport()));
         }
     }
 
@@ -121,15 +125,16 @@ public class DAOImplTest {
     public void whenCheckBalance() throws Exception {
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
             User user = dao.findByPassport("5010 800820");
-            assertEquals(dao.checkBalance("10000000000000000000"), BigDecimal.valueOf(100).setScale(2));
+            assertEquals(dao.checkBalance("10000000000000000000", user.getPassport()), BigDecimal.valueOf(100).setScale(2));
         }
     }
 
-    @Test
+    @Test (expected = IllegalArgumentException.class)
     public void whenCheckBalanceNotAccount() throws Exception {
         try (DAOImpl dao = new DAOImpl(new DBConnect(ConnectionRollBack.create(this.init())))) {
             User user = dao.findByPassport("5010 800820");
-            assertEquals(dao.checkBalance("10000000000000000300"), BigDecimal.ZERO);
+            dao.checkBalance("10000000000000000300", user.getPassport());
+            //assertEquals(dao.checkBalance("10000000000000000300", user.getPassport()), BigDecimal.ZERO);
         }
     }
 }

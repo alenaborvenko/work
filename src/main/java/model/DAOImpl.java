@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Классю имплементирующий интерфейс работы с базой данной
+ */
 public class DAOImpl implements InterfaceDAO {
     private final DBConnect model;
     private final Connection connection;
@@ -25,7 +28,14 @@ public class DAOImpl implements InterfaceDAO {
         this.connection = model.getConnection();
     }
 
-    public User findByPassport(String passport) {
+    /**
+     * Метод для поиска пользователя в базе данных
+     * @param passport - строка с номером и серией паспорта
+     * @return - объект класса User
+     * @throws IllegalArgumentException - если пользователь не найден
+     * @throws SQLException - ошибки работы с базой
+     */
+    public User findByPassport(String passport) throws IllegalArgumentException,SQLException {
         User rsl = null;
         try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM USER WHERE PASSPORT = ?")) {
             statement.setString(1, passport);
@@ -40,20 +50,25 @@ public class DAOImpl implements InterfaceDAO {
                     throw new IllegalArgumentException("Passport not found!");
                 }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
-        user = rsl;
-        return user;
+            user = rsl;
+            return user;
     }
 
+    /**
+     * Метод добавляющий новую карту к существующему пользователю счету
+     * @param numAccount - номер счета к которому требуется добавить карту
+     * @param passport - серия и номер паспорта
+     * @return - true если карта добавлена false - если номер счета не найден
+     * @throws SQLException - ошибки запроса к базе
+     */
     @Override
-    public boolean addNewCard(String numAccount) throws SQLException {
+    public boolean addNewCard(String numAccount, String passport) throws SQLException {
         int rsl = 0;
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID FROM ACCOUNT WHERE NUM = ? " +
                 "AND USER_ID = (SELECT ID FROM USER WHERE PASSPORT = ?)")){
             preparedStatement.setString(1, numAccount);
-            preparedStatement.setString(2, user.getPassport());
+            preparedStatement.setString(2, passport);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     int idAcc = resultSet.getInt(1);
@@ -70,6 +85,10 @@ public class DAOImpl implements InterfaceDAO {
         return rsl > 0;
     }
 
+    /**
+     * метод генерации нового счета
+     * @return - строка с номером счета
+     */
     private String genereted() {
         StringBuilder rsl = new StringBuilder();
         Random random = new Random();
@@ -80,18 +99,24 @@ public class DAOImpl implements InterfaceDAO {
         return rsl.toString();
     }
 
+    /**
+     * метод получающий список всех счетов пользователя
+     * @param passport - серия и  номер паспорта
+     * @return - список объектов типа карт
+     * @throws SQLException - ошибки запроса к базе
+     */
     @Override
-    public List<Card> findAllCard() throws SQLException {
+    public List<Card> findAllCard(String passport) throws SQLException {
         List<Card> cardList = new ArrayList<>();
         try (PreparedStatement preparedStatement = connection.prepareStatement(
                 "SELECT CARD.ID, ACCOUNT.ID, ACCOUNT.NUM, ACCOUNT.BALANCE FROM CARD " +
                         "INNER JOIN ACCOUNT on" +
                         "    ACCOUNT.ID = CARD.ACCOUNT_ID " +
                         "WHERE USER_ID = (SELECT ID FROM USER WHERE PASSPORT = ?)")) {
-            preparedStatement.setString(1, user.getPassport());
+            preparedStatement.setString(1, passport);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                int idCard = resultSet.getInt(1);
+                Long idCard = resultSet.getLong(1);
                 int idAcc = resultSet.getInt(2);
                 String numAccount = resultSet.getString(3);
                 BigDecimal balance = resultSet.getBigDecimal(4);
@@ -103,8 +128,17 @@ public class DAOImpl implements InterfaceDAO {
         return cardList;
     }
 
+    /**
+     * Метод зачисления дс на счет клиенту
+     * @param numAccount - номер счета
+     * @param toUp - сумма зачисления
+     * @param passport - сенрия и номер паспорта
+     * @return - true - если сумма увеличена
+     * @throws IllegalArgumentException - если счет не найден у пользователя
+     * @throws SQLException - ошибки запроса к базе
+     */
     @Override
-    public boolean topUpBalance(String numAccount, BigDecimal toUp) throws SQLException {
+    public boolean topUpBalance(String numAccount, BigDecimal toUp, String passport) throws IllegalArgumentException, SQLException {
         int rsl = 0;
         try (PreparedStatement preparedStatement = connection.prepareStatement(
                 "UPDATE ACCOUNT SET BALANCE = BALANCE + ?" +
@@ -112,25 +146,39 @@ public class DAOImpl implements InterfaceDAO {
         )) {
             preparedStatement.setBigDecimal(1, toUp);
             preparedStatement.setString(2, numAccount);
-            preparedStatement.setString(3, user.getPassport());
+            preparedStatement.setString(3, passport);
             rsl = preparedStatement.executeUpdate();
+            if (rsl == 0) {
+                throw new IllegalArgumentException("Account not found");
+            }
 
         }
         return rsl > 0;
     }
 
+    /**
+     * метод проверящий остаток по счету
+     * @param numAccount - номер счета
+     * @param passport - серия и номер паспорта
+     * @return - остаток
+     * @throws IllegalArgumentException - если номер счета не найден
+     * @throws SQLException - ошибки запроса к базе
+     */
     @Override
-    public BigDecimal checkBalance(String numAccount) throws SQLException {
+    public BigDecimal checkBalance(String numAccount, String passport) throws IllegalArgumentException, SQLException {
         BigDecimal rsl = BigDecimal.ZERO;
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT BALANCE FROM ACCOUNT WHERE NUM = ? " +
                 "AND USER_ID = (SELECT ID FROM USER WHERE PASSPORT = ?)")) {
             preparedStatement.setString(1, numAccount);
-            preparedStatement.setString(2, user.getPassport());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                rsl = resultSet.getBigDecimal(1);
+            preparedStatement.setString(2, passport);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    rsl = resultSet.getBigDecimal(1);
+                } else {
+                    throw new IllegalArgumentException("Account not found");
+                }
             }
-            resultSet.close();
+            //resultSet.close();
         }
         return rsl;
     }

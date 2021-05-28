@@ -1,5 +1,8 @@
 package controller;
 
+/**
+ * Класс для парсинга запроса post паспорта
+ */
 public class Passport {
 
     private String passport;
